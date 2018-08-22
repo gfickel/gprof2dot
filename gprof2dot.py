@@ -144,7 +144,8 @@ SAMPLES2 = Event("Samples", 0, add, times)
 # Used only when totalMethod == callstacks
 TOTAL_SAMPLES = Event("Samples", 0, add, times)
 
-TIME = Event("Time", 0.0, add, lambda x: '(' + str(x) + ')')
+TIME = Event("Time", 0.0, add, lambda x: '(' + str(x*1000) + 'ms)')
+CUMULATIVE_TIME = Event("Cumulative time", 0.0, add, lambda x: '(' + str(x*1000) + 'ms)')
 TIME_RATIO = Event("Time ratio", 0.0, add, lambda x: '(' + percentage(x) + ')')
 TOTAL_TIME = Event("Total time", 0.0, fail)
 TOTAL_TIME_RATIO = Event("Total time ratio", 0.0, fail, percentage)
@@ -2707,6 +2708,7 @@ class PstatsParser:
             callee.called = nc
             callee[TOTAL_TIME] = ct
             callee[TIME] = tt
+            callee[CUMULATIVE_TIME] = ct
             self.profile[TIME] += tt
             self.profile[TOTAL_TIME] = max(self.profile[TOTAL_TIME], ct)
             for fn, value in compat_iteritems(callers):
@@ -2739,7 +2741,7 @@ class PstatsParser:
         self.profile.validate()
         self.profile.ratio(TIME_RATIO, TIME)
         self.profile.ratio(TOTAL_TIME_RATIO, TOTAL_TIME)
-
+        
         return self.profile
 
 
@@ -2980,7 +2982,7 @@ class DotWriter:
 
         return name
 
-    show_function_events = [TOTAL_TIME_RATIO, TIME_RATIO]
+    show_function_events = [TOTAL_TIME_RATIO, TIME_RATIO, CUMULATIVE_TIME]
     show_edge_events = [TOTAL_TIME_RATIO, CALLS]
 
     def graph(self, profile, theme):
